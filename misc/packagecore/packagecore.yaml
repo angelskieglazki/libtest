@@ -11,14 +11,6 @@ commands:
   install:
     - make PREFIX="/usr" install DESTDIR="${BP_DESTDIR}"
 packages:
-  archlinux:
-    builddeps:
-      - libtool
-      - autoconf
-      - intltool
-      - make
-      - gcc
-      - pkgconfig
   centos7.7:
     builddeps:
       - libtool
