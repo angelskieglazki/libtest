@@ -19,7 +19,7 @@ jobs:
       - run:
           command: |
             export CFLAGS=-Werror
-<F2>            echo
+            echo
             echo "########## gcc-10 ##########"
             ./autogen.sh
             ./configure
