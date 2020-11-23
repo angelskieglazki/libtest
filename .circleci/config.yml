@@ -24,7 +24,6 @@ jobs:
             ./autogen.sh
             ./configure
             CC=gcc-10 make
-            ls -l libtest
             make clean
   package-and-publish:
     machine: true
