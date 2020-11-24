@@ -63,6 +63,7 @@ workflows:
   publish-github-release:
     jobs:
       - package-and-publish-release:
+          context: CI_BUILD
           filters:
             tags:
               only: /^v.*/
