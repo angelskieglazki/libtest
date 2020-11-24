@@ -62,7 +62,7 @@ workflows:
 
   publish-github-release:
     jobs:
-      - package-and-publish:
+      - package-and-publish-release:
           filters:
             tags:
               only: /^v.*/
