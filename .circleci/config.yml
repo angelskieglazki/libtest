@@ -52,9 +52,7 @@ jobs:
       - run:
           name: "publish to Bintray"
           command: |
-            go get github.com/tcnksm/ghr
-            ghr -t ${GITHUB_API_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${CIRCLE_TAG} ./dist/
-
+            BINTRAY_USER=${CI_BINTRAY_USER} BINTRAY_PASS=${CI_BINTRAY_API_KEY} BINTRAY_COMPONENT=release BINTRAY_ORG=aeco python ./misc/bintray/bintray.py publish ./dist
 workflows:
   version: 2
 

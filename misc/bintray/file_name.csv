@@ -1,1 +1,29 @@
 bintray.py,file_name.csv
+
+    ('BASENAME:', 'tvheadend_4.2.2-1~g82c8872~xenial_arm64.deb')
+('EXTRA:', ';deb_component=stable-4.2;deb_distribution=xenial;deb_architecture=arm64')
+{ 'org': 'tvheadend',
+  'package': 'tvheadend',
+  'path': 'pool/4.2/tvheadend',
+  'repo': 'deb',
+  'version': '4.2.2-1~g82c8872'}
+
+
+('BASENAME:', 'tvheadend-4.2.2-1~g82c8872.el7.centos.x86_64.rpm')
+('EXTRA:', '')
+{ 'org': 'tvheadend',
+  'package': 'tvheadend',
+  'path': 'linux/4.2/el7.centos/x86_64',
+  'repo': 'centos',
+  'version': '4.2.2-1~g82c8872'}
+
+
+('BASENAME:', 'tvheadend-4.2.2-1~g82c8872.fc24.x86_64.rpm')
+('EXTRA:', '')
+{ 'org': 'tvheadend',
+  'package': 'tvheadend',
+  'path': 'linux/4.2/fc24/x86_64',
+  'repo': 'fedora',
+  'version': '4.2.2-1~g82c8872'}
+BINTRAY_COMPONENT=release BINTRAY_ORG=aeco python bintray.py --test-filename
+

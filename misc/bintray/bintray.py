@@ -33,7 +33,8 @@ BINTRAY_COMPONENT=env('BINTRAY_COMPONENT')
 BINTRAY_ORG=env('BINTRAY_ORG')
 BINTRAY_PACKAGE='libtest'
 
-PACKAGE_DESC='Tvheadend is a TV streaming server and recorder for Linux, FreeBSD and Android'
+PACKAGE_DESC='libtest - test lib'
+
 deb_distrib = {
     'ubuntu20.04': 'focal',
     'ubuntu18.04': 'bionic',
@@ -95,6 +96,7 @@ class Bintray(object):
         return self._push(data, binary)
     
     def post(self, data):
+        print("POST: ", data)
         return self._push(data, method='POST')
 
 def error(lvl, msg, *args):
@@ -156,6 +158,8 @@ def get_repo(filename, hint=None):
             return 'centos'
         elif name.find('.fc') > 0:
             return 'fedora'
+        elif name.find('.opensuse') > 0:
+            return 'opensuse'
 
 def rpmversion(name):
     ver = type('',(object,),{})()
@@ -172,12 +176,12 @@ def get_bintray_params(filename, hint=None):
     filename = filename.strip()
     basename = os.path.basename(filename)
     name, ext = os.path.splitext(basename)
-    print('name: ', name)
-    print('ext: ', ext)
+#    print('name: ', name)
+#    print('ext: ', ext)
     args = type('',(object,),{})()
     args.org = BINTRAY_ORG
     args.repo = get_repo(basename, hint)
-    print('args.repo: ', args.repo)
+#    print('args.repo: ', args.repo)
     args.package = BINTRAY_PACKAGE
     extra = []
     if (args.repo == 'debian') or (args.repo == 'ubuntu') :
@@ -207,27 +211,39 @@ def get_bintray_params(filename, hint=None):
     if extra: extra = ';' + extra
     return (basename, args, extra)
 
+def getall (path):
+    files = []
+    for x in os.listdir(path):
+        x = os.path.join(path, x)
+        if os.path.isdir(x): files += getall(x)
+        else: files.append(x)
+        print(x)
+    return files
+
+
 def do_publish(*args):
-    return
-    if len(args) < 1: error(1, 'upload [file with the file list]')
-    if not DEBUG:
-        branches = os.popen('git branch --contains HEAD').readlines()
-        ok = 0
-        for b in branches:
-            if b[0] == '*':
-                b = b[1:]
-            b = b.strip()
-            if b == 'master' or b.startswith('release/'):
-                ok = 1
-                break
-        if not ok:
-            info('BINTRAY upload - invalid branches\n%s', branches)
-            sys.exit(0)
-    files = open(args[0]).readlines()
+#    return
+#    if len(args) < 1: error(1, 'upload [file with the file list]')
+#    if not DEBUG:
+#        branches = os.popen('git branch --contains HEAD').readlines()
+#        ok = 0
+#        for b in branches:
+#            if b[0] == '*':
+#                b = b[1:]
+#            b = b.strip()
+#            if b == 'master' or b.startswith('release/'):
+#                ok = 1
+#                break
+#        if not ok:
+#            info('BINTRAY upload - invalid branches\n%s', branches)
+#            sys.exit(0)
+#    files = open(args[0]).readlines()
+    files = getall(args[0]) 
     args = None
     for file in files:
         try:
             basename, args, extra = get_bintray_params(file)
+            print("BASENAME:", basename)
             hint = args.repo
             break
         except:
@@ -238,8 +254,10 @@ def do_publish(*args):
                 basename, args, extra = get_bintray_params(file)
             except:
                 traceback.print_exc()
-    bpath = '/packages/tvheadend/%s/tvheadend/versions' % args.repo
+    bpath = '/packages/aeco/%s/libtest/versions' % args.repo
+    print("BPATH: ", bpath)
     data = { 'name': args.version, 'desc': PACKAGE_DESC }
+    print("DATA: ", data)
     resp = Bintray(bpath).post(data)
     if resp.code != 200 and resp.code != 201 and resp.code != 409:
         error(10, 'Version %s/%s: HTTP ERROR %s %s',
@@ -247,7 +265,8 @@ def do_publish(*args):
     info('Version %s/%s created', args.repo, args.version)
     for file in files:
         file = file.strip()
-        basename, args, extra = get_bintray_params(file, hint)
+        print("FILE: ", file)
+        basename, args, extra = get_bintray_params(file)
         pub = 1
         if "-dirty" in basename.lower():
             pub = 0
@@ -304,41 +323,6 @@ def delete_up_to_count(repo, files, max_count, auxfcn=None):
       else:
         key = a
         count = 0
-
-def do_tidy(*args):
-
-    def fedora_delete(repo, path):
-        rest = '-' + '-'.join(path.split('tvheadend-')[1:])
-        for f in files:
-            if f['path'].find(rest) >= 0:
-                delete_file(repo, f['path'])
-
-    def fedora_files(repo):
-      files = get_files(repo, 'tvheadend')
-      sfiles = []
-      for f in files:
-        if f['name'].startswith('tvheadend-debuginfo-'):
-          continue
-        if f['name'].find('~') < 0:
-          continue
-        name, ext = os.path.splitext(f['name'])
-        rpmver = rpmversion(name)
-        f['ver1'], f['ver2'] = rpmver.version.split('~')[0].split('-')
-        f['sortkey'] = "%s/%s/%s*%08d" % (rpmver.dist, rpmver.arch, f['ver1'], long(f['ver2']))
-        sfiles.append(f)
-      return files, sfiles
-
-    files, sfiles = fedora_files('centos')
-    delete_up_to_count('centos', sfiles, 10, fedora_delete)
-
-    files, sfiles = fedora_files('fedora')
-    delete_up_to_count('fedora', sfiles, 10, fedora_delete)
-
-    #files = get_files('misc', 'staticlib', 1)
-    #for f in files:
-    #  a, b = f['path'].split('-')
-    #  f['sortkey'] = a + '*' + f['created']
-    #delete_up_to_count('misc', files, 4)
 
 def do_unknown(*args):
     r = 'Please, specify a valid command:\n'
@@ -401,29 +385,3 @@ if __name__ == "__main__":
 
 
 
-    ('BASENAME:', 'tvheadend_4.2.2-1~g82c8872~xenial_arm64.deb')
-('EXTRA:', ';deb_component=stable-4.2;deb_distribution=xenial;deb_architecture=arm64')
-{ 'org': 'tvheadend',
-  'package': 'tvheadend',
-  'path': 'pool/4.2/tvheadend',
-  'repo': 'deb',
-  'version': '4.2.2-1~g82c8872'}
-
-
-('BASENAME:', 'tvheadend-4.2.2-1~g82c8872.el7.centos.x86_64.rpm')
-('EXTRA:', '')
-{ 'org': 'tvheadend',
-  'package': 'tvheadend',
-  'path': 'linux/4.2/el7.centos/x86_64',
-  'repo': 'centos',
-  'version': '4.2.2-1~g82c8872'}
-
-
-('BASENAME:', 'tvheadend-4.2.2-1~g82c8872.fc24.x86_64.rpm')
-('EXTRA:', '')
-{ 'org': 'tvheadend',
-  'package': 'tvheadend',
-  'path': 'linux/4.2/fc24/x86_64',
-  'repo': 'fedora',
-  'version': '4.2.2-1~g82c8872'}
-BINTRAY_COMPONENT=release BINTRAY_ORG=aeco python bintray.py --test-filename
