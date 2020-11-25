@@ -153,13 +153,15 @@ def get_repo(filename, hint=None):
             return 'ubuntu'
         elif name.find('_debian') > 0:
             return 'debian'
-    if ext == '.rpm':
+    elif ext == '.rpm':
         if name.find('.centos') > 0:
             return 'centos'
         elif name.find('.fc') > 0:
             return 'fedora'
         elif name.find('.opensuse') > 0:
             return 'opensuse'
+    else:
+        return 'tar'
 
 def rpmversion(name):
     ver = type('',(object,),{})()
@@ -202,11 +204,13 @@ def get_bintray_params(filename, hint=None):
         extra.append('deb_component=' + (BINTRAY_COMPONENT or get_component(debversion)))
         extra.append('deb_distribution=' + deb_distrib[debdistro])
         extra.append('deb_architecture=' + debarch)
-    else:
+    elif (args.repo == 'fedora') or (args.repo == 'centos') or (args.repo == 'opensuse') :
         rpmver = rpmversion(name)
         args.version = rpmver.version
         args.path = 'linux/' + get_path(rpmver.version, args.repo) + \
                     '/' + rpmver.dist + '/' + rpmver.arch
+    else:
+        return ('tar', args, extra)
     extra = ';'.join(extra)
     if extra: extra = ';' + extra
     return (basename, args, extra)
@@ -255,9 +259,8 @@ def do_publish(*args):
             except:
                 traceback.print_exc()
     bpath = '/packages/aeco/%s/libtest/versions' % args.repo
-    print("BPATH: ", bpath)
     data = { 'name': args.version, 'desc': PACKAGE_DESC }
-    print("DATA: ", data)
+
     resp = Bintray(bpath).post(data)
     if resp.code != 200 and resp.code != 201 and resp.code != 409:
         error(10, 'Version %s/%s: HTTP ERROR %s %s',
@@ -265,8 +268,9 @@ def do_publish(*args):
     info('Version %s/%s created', args.repo, args.version)
     for file in files:
         file = file.strip()
-        print("FILE: ", file)
         basename, args, extra = get_bintray_params(file)
+        if (basename == 'tar') :
+            continue
         pub = 1
         if "-dirty" in basename.lower():
             pub = 0
@@ -344,6 +348,7 @@ def this_parse(this_string):
 def test_filename():
 #    this_parse(this_string='libtest_0.0.3-14_ubuntu20.04.amd64.deb')
     FILES=[
+        "libtest-v0.0.6.tar.gz",
         "libtest_0.0.3-14_debian10.amd64.deb",
         "libtest_0.0.3-14_debian9.amd64.deb",
         "libtest_0.0.3-14_ubuntu16.04.amd64.deb",
@@ -359,6 +364,9 @@ def test_filename():
     from pprint import pprint
     for f in FILES:
         basename, args, extra = get_bintray_params(f)
+        if (basename == 'tar') :
+            print("TARGZ!!!!!")
+            continue
         print('\n')
         print('BASENAME:', basename)
         print('EXTRA:', extra)
@@ -381,7 +389,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv)
-
-
-
 
