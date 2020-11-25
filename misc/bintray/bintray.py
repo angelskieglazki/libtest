@@ -248,6 +248,8 @@ def do_publish(*args):
         try:
             basename, args, extra = get_bintray_params(file)
             print("BASENAME:", basename)
+            if (basename == 'tar') :
+                continue
             hint = args.repo
             break
         except:
