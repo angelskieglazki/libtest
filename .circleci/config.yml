@@ -48,7 +48,7 @@ jobs:
           name: "publish to GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            ghr -t ${GITHUB_API_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${CIRCLE_TAG} -n $(cat ./misc/RELEASE_TITLE) -b $(cat ./misc/RELEASE_BODY) ./dist/
+            ghr -t "${GITHUB_API_TOKEN}" -u "${CIRCLE_PROJECT_USERNAME}" -r "${CIRCLE_PROJECT_REPONAME}" -c "${CIRCLE_SHA1}" -body "$(cat ./misc/RELEASE_BODY)" ${CIRCLE_TAG} ./dist/
       - run:
           name: "publish to Bintray"
           command: |
