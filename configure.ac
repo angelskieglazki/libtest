@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([test], [0.0.1], [email@example.com])
+AC_INIT([test], [0.0.2], [email@example.com])
 AC_DEFINE([PACKAGE_DESCRIPTION], ["C project application"], [Application description])
 
 AM_INIT_AUTOMAKE
